@@ -3,8 +3,42 @@
 /** STRING **/
 
 char* strRange(char* a, uint32_t i, uint32_t f) {
+	unsigned int len = strLen(a);
+	unsigned int acc = 0;
+	char* res;
+	//Si i>f, retorna el mismo string pasado por parámetro
+	
+	if (i > f)
+	{
+		res = a;
+	}else{
+		//Si f>len, se tomará como lı́mite superior la longitud del string.
+		if (f > len)
+		{
+			f = len;
+		}
+		//i>len, entonces retorna la string vacı́a
+		if (i >= len )
+		{
+			res = (char *) malloc(1);
 
-    return 0;
+			*res = '\0';
+			free(a);
+		}else{
+			int tam = f - i +2;
+
+			res = (char *) malloc(tam);
+			while(i<=f){
+				res[acc] = a[i];
+				acc++;
+				i++;
+				res[acc] ='\0';
+			}
+			free(a);
+		}
+	}
+
+    return res;
 }
 
 /** Lista **/

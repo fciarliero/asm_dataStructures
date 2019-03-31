@@ -1,15 +1,8 @@
 
 section .rodata
-    %define NULL byte 0
-
     formatoStr: db "%s", 0
     textualNULL: db "NULL",0
-    off_datoNodo: db 0
-    off_nextNodo: db 8
-    off_prevNodo: db 16
 
-    off_firstList: db 0
-    off_lastList: db 8
 section .text
 
 extern malloc
@@ -40,8 +33,13 @@ global nTableAdd
 global nTableRemoveSlot
 global nTableDeleteSlot
 global nTableDelete
+    %define off_datoNodo 0
+    %define off_nextNodo 8
+    %define off_prevNodo 16 
+    %define NULL 0
 
-;%define NULL 0
+    %define off_firstList  0
+    %define off_lastList  8
 
 ;uint32_t strLen(char* a)
 strLen:                     ;rdi → *a
@@ -207,7 +205,7 @@ jmp .copioB         ;si a era vacio, copio el b
     cmp byte [rsi], NULL
     jne .copioB
 .fin:
-    mov byte [r15], 0
+    mov byte [r15], NULL    ;copio '\0' del finde string
     mov rdi, r12
     call strDelete
     mov rdi, r13
@@ -239,7 +237,7 @@ strPrint:                       ;rdi = *a, rsi = *pFile
     push rbp
     mov rbp, rsp
     mov rdx, rdi
-    cmp byte rdi, NULL
+    cmp rdi, NULL
     je .esNull
     cmp byte [rdi], NULL
     jne .noEsNull
@@ -297,7 +295,7 @@ del_listElem: ;rdi = nodoAborrar, rsi = &pointerSiguiente, rdx = &pointerAnterio
     mov rdi, [r12 + off_datoNodo]   ;cargo el dato *void a borrar en rdi para pasarlo como parametro a free o funcDelete_t
     cmp r15, NULL                   ;me fijo si tengo que llamar a free o a funcDelete        
     je .borroStandard 
-    call [r15]
+    call r15
     jmp .continuar
     .borroStandard:
     call free
@@ -320,11 +318,13 @@ del_listElem: ;rdi = nodoAborrar, rsi = &pointerSiguiente, rdx = &pointerAnterio
 ;    struct s_listElem *last;  ←offset 8
 ;} list_t;
 
+
 ;list_t* listNew()
 listNew:
     push rbp
     mov rbp, rsp
     push r12
+    xor r12, r12
     sub rsp, 8
     mov rdi, 16
     call malloc
@@ -427,6 +427,10 @@ listDelete:                     ;rdi = list, rsi = funcDelete
     push r13
     mov r12, rdi
     mov r13, rsi
+    cmp byte [r12 +off_firstList], NULL
+    jne .ciclo
+    call free
+    jmp .fin
     .ciclo:
     cmp byte [r12 +off_firstList], NULL
     je .fin

@@ -6,7 +6,6 @@
 #include <math.h>
 
 #include "lib.h"
-
 void test_n3tree(FILE *pfile){
     
 }
@@ -45,7 +44,7 @@ char *a, *b, *c;
     fprintf(pfile,"%i\n",strLen(c));            
     int h = strLen(c);
     	//a = strClone(c);
-    	//a = strRange(a,10,15);
+    	//a = strRange(a,0,1);
     	//strPrint(a,pfile);
     	//strDelete(a);
     	//a = strRange(c,1,0);
