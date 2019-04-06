@@ -44,6 +44,31 @@ char* strRange(char* a, uint32_t i, uint32_t f) {
 /** Lista **/
 
 void listPrintReverse(list_t* l, FILE *pFile, funcPrint_t* fp) {
+	fprintf(pFile, "%s","[" );
+	if (l != NULL)
+	{
+	listElem_t *primero = l->first;
+	listElem_t *ultimo = l->last;
+	//void *dat = primero->data;
+		while(ultimo != NULL){
+			if(fp != NULL){
+				fp(ultimo->data, pFile);
+				
+			}else{
+				fprintf(pFile, "%p",ultimo->data);
+				
+			}
+			ultimo = ultimo->prev;
+			if (ultimo != NULL)
+			{
+				fprintf(pFile, "%s","," );
+			}
+		}
+
+	}
+	fprintf(pFile, "%s","]" );
+//	//lol
+// listPrintRev(l,pFile,(funcPrint_t*)&fp);
 
 }
 

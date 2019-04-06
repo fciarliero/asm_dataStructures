@@ -71,11 +71,61 @@ char *a, *b, *c;
         }
     }
 }
+void test_list(FILE *pfile) {
+    fprintf(pfile,"\n");
+    char *a, *b, *c;
+    list_t* l1;
+    // listAddFirst
+    fprintf(pfile,"==> listAddFirst\n");
+    l1 = listNew();
+    listPrint(l1,pfile,(funcPrint_t*)&strPrint); fprintf(pfile,"\n");
+    listPrintReverse(l1,pfile,(funcPrint_t*)&strPrint); fprintf(pfile,"\n");
+    listAddFirst(l1,strClone("PRIMERO"));
+    listPrint(l1,pfile,(funcPrint_t*)&strPrint); fprintf(pfile,"\n");
+    listPrintReverse(l1,pfile,(funcPrint_t*)&strPrint); fprintf(pfile,"\n");
+    listDelete(l1,(funcDelete_t*)&strDelete);
+    l1 = listNew();
+    listAddFirst(l1,strClone("PRIMERO"));
+    listAddFirst(l1,strClone("PRIMERO"));
+    listPrint(l1,pfile,(funcPrint_t*)&strPrint); fprintf(pfile,"\n");
+    listPrintReverse(l1,pfile,(funcPrint_t*)&strPrint); fprintf(pfile,"\n");
+    listDelete(l1,(funcDelete_t*)&strDelete);
+    l1 = listNew();
+    listAddFirst(l1,strClone("PRIMERO"));
+    listAddFirst(l1,strClone("PRIMERO"));
+    listAddFirst(l1,strClone("PRIMERO"));
+    listPrint(l1,pfile,(funcPrint_t*)&strPrint); fprintf(pfile,"\n");
+    listPrintReverse(l1,pfile,(funcPrint_t*)&strPrint); fprintf(pfile,"\n");
+    listDelete(l1,(funcDelete_t*)&strDelete);
+    // listAddLast
+    fprintf(pfile,"==> listAddLast\n");
+    l1 = listNew();
+    listAddLast(l1,strClone("ULTIMO"));
+    listPrint(l1,pfile,(funcPrint_t*)&strPrint); fprintf(pfile,"\n");
+    listPrintReverse(l1,pfile,(funcPrint_t*)&strPrint); fprintf(pfile,"\n");
+    listDelete(l1,(funcDelete_t*)&strDelete);
+    l1 = listNew();
+    listAddLast(l1,strClone("ULTIMO"));
+    listAddLast(l1,strClone("ULTIMO"));
+    listPrint(l1,pfile,(funcPrint_t*)&strPrint); fprintf(pfile,"\n");
+    listPrintReverse(l1,pfile,(funcPrint_t*)&strPrint); fprintf(pfile,"\n");
+    listDelete(l1,(funcDelete_t*)&strDelete);
+    l1 = listNew();
+    listAddLast(l1,strClone("ULTIMO"));
+    listAddLast(l1,strClone("ULTIMO"));
+    listAddLast(l1,strClone("ULTIMO"));
+    listPrint(l1,pfile,(funcPrint_t*)&strPrint); fprintf(pfile,"\n");
+    listPrintReverse(l1,pfile,(funcPrint_t*)&strPrint); fprintf(pfile,"\n");
+    listDelete(l1,(funcDelete_t*)&strDelete);
+
+}
+
 
 
 int main (void){
     FILE *pfile = fopen("salida.caso.propios.txt","w");
-    test_string(pfile);
+    //test_string(pfile);
+    test_list(pfile);
     //test_n3tree(pfile);
     //test_nTable(pfile);
     fclose(pfile);
