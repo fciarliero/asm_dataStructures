@@ -316,32 +316,10 @@ del_listElem: ;rdi = nodoAborrar, rsi = &pointerSiguiente, rdx = &pointerAnterio
     jmp .salir
     .llamarFree:
         mov rdi, [r12 + off_datoNodo]
-        call free
+        ;call free
     .salir:
     mov rdi, r12
     call free
-
-
-
-    
-               ; mov r12, rdi                    ;r12 ← nodoAborrar
-               ; mov r13, rsi                    ;r13 ← pointerSiguiente
-               ; mov r14, rdx                    ;r14 ← pointerAnterior
-               ; mov r15, rcx                    ;r15 ← funcDelete_t
-               ; mov rdi, [r12 + off_datoNodo]   ;cargo el dato *void a borrar en rdi para pasarlo como parametro a free o funcDelete_t
-               ; cmp r15, NULL                   ;me fijo si tengo que llamar a free o a funcDelete        
-               ; je .borroStandard 
-               ; call r15
-               ; jmp .continuar
-               ; .borroStandard:
-               ; call free
-               ; .continuar:                     ;ya borre el dato del nodoAnterior, ligo los punteros
-               ; mov r15, [r12 + off_nextNodo]
-               ; mov [r14], r15
-               ; mov r15, [r12 + off_prevNodo] 
-               ; mov [r13], r15
-               ; mov rdi, r12
-               ; call free
     pop r15
     pop r14
     pop r13
@@ -436,30 +414,225 @@ listAddLast:
     pop rbp
     ret
 
+;    void listAdd(list_t* l, void* data, funcCmp_t* fc){
+;    listElem_t *actual = l->first;
+;    listElem_t *anterior = NULL;
+;    //me fijo si la lista es vacia
+;    if (actual != NULL)
+;    { 
+;                //actual->data > data
+;        while(fc(actual->data, data) == -1){
+;            anterior = actual;
+;            actual = actual->next;
+;        } 
+;        listElem_t *previ = anterior;
+;        listElem_t *nex = actual;
+;        actual = new_listElem(dato, nex, previ );
+;        //anterior == NULL => añado en el primer lugar
+;        if (previ == NULL)
+;        {
+;            l->first->prev = actual;
+;            l->first = actual;
+;        }else if (nex == NULL){
+;        //nex == NULL => añado en el ultimo lugar
+;            l->last->next = actual;
+;            l->last = actual;
+;        }else{
+;            nex->prev = actual;
+;            previ->next= actual;
+;        }
+;
+;
+;    }else{
+;        listAddFirst( l, data);
+;    }
+;}
 
+;void listAdd(list_t* l, void* data, funcCmp_t* fc)
+listAdd:
+    push rbp
+    mov rbp, rsp
+    push r12
+    push r13
+    push r14
+    push r15
 
+    mov r12, rdi    ;r12 = l
+    mov r13, rsi    ;r13 = data
+    mov r14, rdx    ;r14 = fc
+    mov r11, NULL   ;previ = NULL
+    mov r15, [r12 + off_firstList]              ;    listElem_t *actual = l->first;
+    ;cmp r15, [r12 + off_lastList]                               ;    //me fijo si la lista es vacia
+    cmp r15, NULL                                 ;la lista es vacia?
+    je .agregoAdelante
+    .ciclo:
+        mov rdi, [r15 + off_datoNodo]
+        mov rsi, r13
+            push r11
+            sub rsp, 8
+        call r14
+            add rsp, 8
+            pop r11
+        cmp rax, 1
+        jne .salirCiclo
+        mov r11, r15
+        mov r15, [r15 + off_nextNodo]
+        cmp r15, NULL
+        je .salirCiclo
+        jmp .ciclo
+    .salirCiclo:    ;r15 = siguiente, r11 = anterior
+        cmp r15, NULL
+        je .agregoAtras
+        cmp r11, NULL 
+        je .agregoAdelante
+        mov rdi, r13
+        mov rsi, r15
+        mov rdx, r11
+            push r11
+            sub rsp, 8
+            call new_listElem ;rdi = dato, rsi = siguiente, rdx = anterior
+            add rsp, 8
+            pop r11
+
+        mov [r15 + off_prevNodo], rax       ;nex->prev = actual;
+        mov [r11 + off_nextNodo], rax       ;previ->next= actual;
+        jmp .fin
+        .agregoAtras:
+            mov rdi, r12
+            mov rsi, r13
+            call listAddLast
+            jmp .fin
+        .agregoAdelante:
+            mov rdi, r12                        ;listAddFirst( l, data);
+            mov rsi, r13
+            call listAddFirst
+    .fin:
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop rbp
+    ret
+;int listaLargo(lista_t *l);
+;listaLargo:
 ;    push rbp
 ;    mov rbp, rsp
 ;    push r12
 ;    push r13
-;    mov r12, rdi
-;    mov r13, rsi
-;    ;s_listElem* new_listElem(void* dato, s_listElem* siguiente, s_listElem* anterior )
-;    mov rdi, rsi
-;    xor rsi, rsi
-;    mov rdx, [r12 + off_lastList]
-;    call new_listElem
-;    mov [r12 + off_lastList], rax
+;    xor rax, rax
+;    mov r12, [rdi + off_firstList]
+;    mov r13, [rdi + off_lastList]
+;    cmp r12, r13
+;    jne .listaConUnElemento
+;    .ciclo:
+;    add rax, 1
+;    mov r12, [r12 + off_nextNodo]
+;    cmp r12, NULL
+;    je .fin
+;    jmp .ciclo
+;    .listaConUnElemento:
+;    cmp r12, NULL
+;    je .zero
+;    mov rax, 1
+;    jmp .fin
+;    .zero:
+;    mov rax, 0
+;    .fin:
 ;    pop r13
 ;    pop r12
 ;    pop rbp
 ;    ret
 
-listAdd:
+;void listRemove(list_t* l, void* data, funcCmp_t* fc, funcDelete_t* fd)
+listRemove:
+    push rbp
+    mov rbp, rsp
+    push r12
+    push r13
+    push r14
+    push r15
+
+    mov r12, rdi    ;r12 = l
+    mov r13, rsi    ;r13 = data
+    mov r14, rdx    ;r14 = fc
+    mov r15, rcx    ;r15 = fd
+    mov r10, NULL   ;previ = NULL
+    mov r11, [r12 + off_firstList]              ;    listElem_t *actual = l->first;
+    ;cmp r15, [r12 + off_lastList]                               ;    //me fijo si la lista es vacia
+    cmp r11, NULL                                 ;la lista es vacia?
+    je .fin
+    .ciclo:             ;r10 =anterior, r11 = siguiente
+        mov rdi, [r11 + off_datoNodo]
+        mov rsi, r13
+            push r10
+            push r11
+        call r14
+            pop r11
+            pop r10
+        cmp rax, 0
+        je .borro
+        mov r10, r11
+        mov r11, [r11 + off_nextNodo]
+        cmp r11, NULL
+        je .salirCiclo
+        jmp .ciclo
+    .borro:
+        cmp r10, NULL
+        je .borroPrimero
+        cmp qword [r11 + off_nextNodo], NULL
+        je .borroUltimo
+        mov r9, [r11 + off_nextNodo]
+        mov [r10 + off_nextNodo], r9
+        mov [r9 + off_prevNodo], r10
+        mov rdi, r11
+        mov rsi, r15
+            push r10
+            push r9
+            call del_listElem
+            pop r9
+            pop r10
+        mov r11, r9
+        jmp .ciclo
+    .borroPrimero:
+    mov rdi, r12
+    mov rsi, r15
+        push r10
+        push r11
+        call listRemoveFirst
+        pop r11
+        pop r10
+    mov r11, [r12 + off_firstList]
+    cmp r11, NULL
+    je .fin
+    jmp .ciclo
+    .borroUltimo:
+    mov rdi, r12
+    mov rsi, r15
+    call listRemoveLast
+    .salirCiclo:    ;r15 = siguiente, r11 = anterior
+    .fin:
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop rbp
     ret
 
-listRemove:
-    ret
+;    push rbp
+;    mov rbp, rsp
+;    push r12
+;    push r13
+;    push r14
+;    push r15
+;
+;    
+;
+;    pop r15
+;    pop r14
+;    pop r13
+;    pop r12
+;    pop rbp
+;    ret
 
 
 ;void listRemoveFirst(list_t* l, funcDelete_t* fd){
@@ -500,7 +673,8 @@ listRemoveFirst: ;rdi = lista, rsi = funcDelete
     mov r15, [rdi + off_lastList]
     cmp r14, NULL
     jne .listaNoVacia
-    call free
+;    mov rdi, r12
+;    call free
     jmp .fin
     .listaNoVacia:
         cmp r14, r15
@@ -519,41 +693,51 @@ listRemoveFirst: ;rdi = lista, rsi = funcDelete
         mov rdi, r14
         call del_listElem
     .fin:
-
-
-
-                ;mov r12, rdi                        ;r12 = lista
-                ;mov r13, rsi                        ;r13 = funcDelete_t
-                ;    ;del_listElem: ;rdi = nodoAborrar, rsi = &pointerSiguiente, rdx = &pointerAnterior, rcx = funcDelete_t
-                ;mov r14, [rdi + off_firstList]      ;r14 = lista_t.first    
-                ;mov r15, [rdi + off_lastList]       ;r15 = lista_t.last
-                ;    ;caso el nodo es unico o lista vacia
-                ;cmp r14, r15
-                ;jne .noEsUnico
-
-                ;cmp r14, NULL   ;caso lista vacia
-                ;je .fin
-                ;    ;el nodo es unico
-                ;jmp .borrar    
-                ;.noEsUnico:
-                ;mov r15, [r14 + off_nextNodo]       ;r15 = signodo
-                ;add r15, off_prevNodo               ;r15 = &signodo.prevNodo
-                ;.borrar:
-                ;mov rdi, [r14]
-                ;mov rsi, r14
-                ;mov rdx, r15
-                ;mov rcx, r13
-                ;call del_listElem
-
-                ;.fin:
     pop r15
     pop r14
     pop r13
     pop r12
     pop rbp
     ret
+
 ;void listRemoveLast(list_t* l, funcDelete_t* fd)
 listRemoveLast:
+    push rbp
+    mov rbp, rsp   
+    push r12
+    push r13
+    push r14
+    push r15
+    mov r12, rdi
+    mov r13, rsi
+    mov r14, [rdi + off_firstList]
+    mov r15, [rdi + off_lastList]
+    cmp r14, NULL
+    jne .listaNoVacia
+;    call free
+    jmp .fin
+    .listaNoVacia:
+        cmp r14, r15
+        jne .tieneMasQUnElemento
+        mov rdi, r14
+        call del_listElem
+        mov qword [r12 + off_firstList], NULL
+        mov qword [r12 + off_lastList], NULL
+        
+        jmp .fin
+    .tieneMasQUnElemento:
+        mov rcx, [r15 + off_prevNodo]
+        ;mov rcx, [rcx + off_nextNodo]
+        mov qword [rcx + off_nextNodo], NULL
+        mov [r12 + off_lastList], rcx
+        mov rdi, r15
+        call del_listElem
+    .fin:
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop rbp
     ret
 ;void listDelete(list_t* l, funcDelete_t* fd)
 listDelete:                     ;rdi = list, rsi = funcDelete
@@ -615,7 +799,7 @@ listPrint:
             mov rsi, formatoPtr
             mov rcx, [r15 + off_datoNodo]
             call fprintf
-        .saltito
+        .saltito:
         mov r15, [r15 + off_nextNodo]
         cmp r15, NULL
         je .ciclo
@@ -637,60 +821,7 @@ listPrint:
       pop rbp
     ret
 
-    listPrintRev:
 
-    push rbp
-    mov rbp, rsp
-    push r12
-    push r13
-    push r14
-    push r15
-    mov r12, rdi                ;lista
-    mov r13, rsi                ;pfile
-    mov r14, rdx 
-    mov rcx, rdx               ;funprint
-    mov rdi, r13
-    xor rsi, rsi
-    mov rsi, formatoChar
-    mov rdx, [abre]
-    call fprintf
-    mov r15, [r12 + off_lastList]
-    .ciclo:
-        cmp r15, NULL
-        je .termino
-        cmp r14, NULL
-        je .copioStandard
-            mov rdi, [r15 + off_datoNodo]
-            mov rsi, r13
-            call r14
-            jmp .saltito
-        .copioStandard:
-            mov rdi, r13
-            mov rsi, formatoPtr
-            mov rcx, [r15 + off_datoNodo]
-            call fprintf
-        .saltito
-        mov r15, [r15 + off_prevNodo]
-        cmp r15, NULL
-        je .ciclo
-        mov rdi, r13
-        mov rsi, formatoChar
-        mov rdx, [coma]
-        call fprintf
-        jmp .ciclo
-
-    .termino:
-      mov rdi, r13
-      mov rsi, formatoChar
-      mov rdx, [cierra]
-      call fprintf
-      pop r15
-      pop r14
-      pop r13
-      pop r12
-      pop rbp
-    ret
-    ;por que hice esto asi? buena pregunta.
 
 n3treeNew:
     ret

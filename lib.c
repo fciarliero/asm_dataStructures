@@ -72,6 +72,9 @@ void listPrintReverse(list_t* l, FILE *pFile, funcPrint_t* fp) {
 
 }
 
+
+
+
 /** n3tree **/
 
 void n3treePrintAux(n3treeElem_t** t, FILE *pFile, funcPrint_t* fp) {

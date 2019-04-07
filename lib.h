@@ -46,7 +46,7 @@ void listRemoveLast(list_t* l, funcDelete_t* fd);
 void listDelete(list_t* l, funcDelete_t* fd);
 void listPrint(list_t* l, FILE *pFile, funcPrint_t* fp);
 void listPrintReverse(list_t* l, FILE *pFile, funcPrint_t* fp);
-
+int listaLargo(list_t *l);
 /** n3tree **/
 
 typedef struct s_n3tree{
