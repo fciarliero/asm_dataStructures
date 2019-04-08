@@ -233,12 +233,27 @@ void test_list(FILE *pfile) {
     
 }
 
-
+void test_n3Tree(FILE *pfile) {
+    char *a, *b, *c;
+    n3tree_t *t;
+    // n3treeAdd
+    fprintf(pfile,"==> n3treeAdd\n");
+    t = n3treeNew();
+    n3treeAdd(t, strClone("zar"),(funcCmp_t*)&strCmp);
+    n3treeAdd(t, strClone("zar"),(funcCmp_t*)&strCmp);
+    n3treeAdd(t, strClone("zsd"),(funcCmp_t*)&strCmp);
+    n3treeAdd(t, strClone("zasf"),(funcCmp_t*)&strCmp);
+    n3treeAdd(t, strClone("za33r"),(funcCmp_t*)&strCmp);
+    n3treeAdd(t, strClone("21ar"),(funcCmp_t*)&strCmp);
+    n3treePrint(t,pfile,(funcPrint_t*)&strPrint);
+    fprintf(pfile,"\n");
+}
 
 int main (void){
     FILE *pfile = fopen("salida.caso.propios.txt","w");
     //test_string(pfile);
-    test_list(pfile);
+    //test_list(pfile);
+    test_n3Tree(pfile);
     //test_n3tree(pfile);
     //test_nTable(pfile);
     fclose(pfile);

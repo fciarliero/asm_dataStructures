@@ -38,6 +38,7 @@ global nTableAdd
 global nTableRemoveSlot
 global nTableDeleteSlot
 global nTableDelete
+
     %define off_datoNodo 0
     %define off_nextNodo 8
     %define off_prevNodo 16 
@@ -46,6 +47,14 @@ global nTableDelete
     %define off_firstList  0
     %define off_lastList  8
 
+    %define off_n3ElemData 0
+    %define off_n3ElemLeft 8
+    %define off_n3ElemCenter 16
+    %define off_n3ElemRight 24
+
+    %define menor -1
+    %define mayor 1
+    %define igual 0
 
 ;uint32_t strLen(char* a)
 strLen:                     ;rdi → *a
@@ -136,13 +145,13 @@ strCmp:
             je .AigualB
             jmp .aGrande
     .aGrande:
-        mov rax, 1
+        mov rax, mayor
         jmp .fin
     .bGrande:
-        mov rax, -1
+        mov rax, menor
         jmp .fin
     .AigualB:
-    mov rax, 0
+    mov rax, igual
     .fin:
     pop r13
     pop r12
@@ -381,7 +390,7 @@ listAddFirst:       ;rdi = *lista, rsi = *dato
     pop r12
     pop rbp
     ret
-
+;;void listAddLast(list_t* l, void* data)
 listAddLast:
     push rbp
     mov rbp, rsp
@@ -618,23 +627,6 @@ listRemove:
     pop rbp
     ret
 
-;    push rbp
-;    mov rbp, rsp
-;    push r12
-;    push r13
-;    push r14
-;    push r15
-;
-;    
-;
-;    pop r15
-;    pop r14
-;    pop r13
-;    pop r12
-;    pop rbp
-;    ret
-
-
 ;void listRemoveFirst(list_t* l, funcDelete_t* fd){
 ;    elemento primero = l.first
 ;    elemento ultimo = l.last 
@@ -822,12 +814,131 @@ listPrint:
     ret
 
 
+;typedef struct s_n3treeElem{
+;void* data;                    ←offset 0
+;struct s_n3treeElem *left;     ←offset 8
+;struct s_list *center;         ←offset 16
+;struct s_n3treeElem *right;    ←offset 24
+;} n3treeElem_t;                ←tam 32
+new_n3treeElem:
+    push rbp
+    mov rbp, rsp
+    push r12
+    push r13
+    mov r13, rdi            ;data = r13
+    mov rdi, 32
+    call malloc
+    mov r12, rax
+    mov [r12 + off_n3ElemData], r13
+    mov qword [r12 + off_n3ElemLeft], NULL
+    call listNew
+    mov [r12 + off_n3ElemCenter], rax
+    mov qword [r12 + off_n3ElemRight], NULL
+    mov rax, r12
+    pop r13
+    pop r12
+    pop rbp
+ret
 
+;typedef struct s_n3tree{
+;struct s_n3treeElem *first; ← offset 0
+;} n3tree_t;                 ← tam 8
+
+;n3tree_t* n3treeNew()
 n3treeNew:
+    push rbp
+    mov rbp, rsp
+    mov rdi, 8
+    call malloc
+    mov qword [rax], NULL 
+    pop rbp
     ret
 
+;void n3treeAdd(n3tree_t* t, void* data, funcCmp_t* fc)
 n3treeAdd:
+    push rbp
+    mov rbp, rsp
+    push r12
+    push r13
+    push r14
+    push r15
+    mov r12, rdi            ;rdi = n3tree
+    mov r13, rsi            ;rsi = data 
+    mov r14, rdx            ;rdx = fc
+    mov rdi, r13
+    call new_n3treeElem
+    mov r15, rax            ;r15 = nuevo nodo
+    cmp qword [r12], NULL
+    je .n3Nulo
+    mov rdi, [r12]
+    mov rsi, r15
+    mov rdx, r14
+    call recuAddn3
+    jmp .fin
+    .n3Nulo:
+        mov [r12], r15
+    .fin:
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop rbp
     ret
+;n3tree_t* recuAddn3(n3treeElem* n3, n3treeElem* nodo, funcComp* fc)
+recuAddn3:
+    push rbp
+    mov rbp, rsp
+    push r12
+    push r13
+    push r14
+    push r15
+    mov r12, rdi    ;r12 = n3treeElem
+    mov r13, rsi    ;r13 = nodo
+    mov r14, rdx    ;r14 = fc
+
+    mov rdi, [r12 + off_n3ElemData]
+    mov rsi, [r13 + off_n3ElemData]
+    call r14
+    cmp rax, menor
+    je .agregoDer
+    cmp rax, mayor
+    je .agregoIzq
+    ;si estoy aca es porque son iguales
+        mov rdi, [r12 + off_n3ElemCenter]
+        mov rsi, [r13 + off_n3ElemData]
+        call listAddLast
+        jmp .fin
+    .agregoIzq:
+        cmp qword [r12 + off_n3ElemLeft], NULL
+        jne .recuCallIz
+        mov [r12 + off_n3ElemLeft], r13
+        jmp .fin
+        .recuCallIz:
+            mov rdi, [r12 + off_n3ElemLeft]
+            mov rsi, r13
+            mov rdx, r14
+            call recuAddn3
+            jmp .fin
+    .agregoDer:
+        cmp qword [r12 + off_n3ElemRight], NULL
+        jne .recuCallDe
+        mov [r12 + off_n3ElemRight], r13
+        jmp .fin
+        .recuCallDe:
+            mov rdi, [r12 + off_n3ElemRight]
+            mov rsi, r13
+            mov rdx, r14
+            call recuAddn3
+            jmp .fin   
+    .fin:
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop rbp
+    ret 
+
+
 
 n3treeRemoveEq:
     ret

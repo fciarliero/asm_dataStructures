@@ -76,13 +76,56 @@ void listPrintReverse(list_t* l, FILE *pFile, funcPrint_t* fp) {
 
 
 /** n3tree **/
+/*
+typedef struct s_n3treeElem{
+void* data;
+struct s_n3treeElem *left;
+struct s_list *center;
+struct s_n3treeElem *right;
+} n3treeElem_t;
+*/
+void n3treePrintAux(n3treeElem_t* t, FILE *pFile, funcPrint_t* fp) {
+	if (t == NULL)
+	{
+		return;
+	}
+	n3treePrintAux(t->right, pFile, fp);
 
-void n3treePrintAux(n3treeElem_t** t, FILE *pFile, funcPrint_t* fp) {
+		if(fp == NULL){
+			fprintf(pFile, "%p",t->data );
+		}else{
+			fp(t->data, pFile);
+		}
 
+		if (t->center->first != NULL)
+		{
+			listPrint(t->center,pFile,fp);
+		}
+		fprintf(pFile, "%s"," ");
+
+	n3treePrintAux(t->left, pFile, fp);
 }
-
+//
+//void printInorder(struct Node* node) 
+//{ 
+//    if (node == NULL) 
+//        return; 
+//  
+//    /* first recur on left child */
+//    printInorder(node->left); 
+//  
+//    /* then print the data of node */
+//    cout << node->data << " "; 
+//  
+//    /* now recur on right child */
+//    printInorder(node->right); 
+//} 
 void n3treePrint(n3tree_t* t, FILE *pFile, funcPrint_t* fp) {
-
+	fprintf(pFile, "%s","<< " );
+	if(t != NULL){
+		n3treePrintAux(t->first, pFile, fp);
+	}
+	fprintf(pFile, "%s",">>" );
 }
 
 /** nTable **/
