@@ -245,14 +245,9 @@ void test_n3Tree(FILE *pfile) {
     n3treeAdd(t, strClone("zasf"),(funcCmp_t*)&strCmp);
     n3treeAdd(t, strClone("za33r"),(funcCmp_t*)&strCmp);
     n3treeAdd(t, strClone("21ar"),(funcCmp_t*)&strCmp);
-    n3treeAdd(t, strClone("zasf"),(funcCmp_t*)&strCmp);
-       n3treeAdd(t, strClone("21ar"),(funcCmp_t*)&strCmp);
-    n3treeAdd(t, strClone("zasf"),(funcCmp_t*)&strCmp);
     n3treePrint(t,pfile,(funcPrint_t*)&strPrint);
     fprintf(pfile,"\n");
-    n3treeRemoveEq(t,(funcDelete_t*)&strDelete);
-    n3treePrint(t,pfile,(funcPrint_t*)&strPrint);
-    fprintf(pfile,"\n");
+    n3treeDelete(t,(funcDelete_t*)&strDelete);
 }
 
 int main (void){

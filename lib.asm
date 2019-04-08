@@ -1010,9 +1010,60 @@ n3treeRemoveRecu:
     pop r12
     pop rbp
     ret
-
+;void n3treeDelete(n3tree_t* t, funcDelete_t* fd)
 n3treeDelete:
+    push rbp
+    mov rbp, rsp
+    push r12
+    sub rbp, 8
+    mov r12, rdi
+    mov rdi, [rdi]
+    call n3treeRecuDelete
+    mov rdi, r12
+    call free
+    add rbp, 8
+    pop r12
+    pop rbp
     ret
+
+;void n3treeRecuDelete(n3treeElem_t* t, funcDelete_t* fd)
+n3treeRecuDelete:
+    push rbp
+    mov rbp, rsp
+    push r12
+    push r13
+    mov r12, rdi        ;nodo = r12
+    mov r13, rsi        ;fd = r13
+
+    cmp r12, NULL
+    je .fin
+    mov rdi, [r12 + off_n3ElemCenter]
+    mov rsi, r13
+    call listDelete
+    cmp r13, NULL
+    je .llamoFree
+    mov rdi, [r12 + off_n3ElemData]
+    call r13
+    jmp .continuar
+    .llamoFree:
+    mov rdi, [r12 + off_n3ElemData]
+    call free
+    .continuar:
+        mov rdi, [r12 + off_n3ElemRight]
+        mov rsi, r13
+        call n3treeRecuDelete
+        mov rdi, [r12 + off_n3ElemLeft]
+        mov rsi, r13
+        call n3treeRecuDelete
+        jmp .fin
+    .fin:
+    mov rdi, r12
+    call free
+    pop r13
+    pop r12
+    pop rbp
+    ret
+
 
 nTableNew:
     ret
