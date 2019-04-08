@@ -757,7 +757,34 @@ listDelete:                     ;rdi = list, rsi = funcDelete
     pop r12
     pop rbp
     ret
-
+;vacia la lista
+;void listEmpty(list_t* l, funcDelete_t* fd)
+listEmpty:
+    push rbp
+    mov rbp, rsp
+    push r12
+    push r13
+    mov r12, rdi
+    mov r13, rsi
+    cmp qword [r12 + off_firstList], NULL
+    jne .ciclo
+    jmp .fin
+    .ciclo:
+        cmp qword [r12 + off_firstList], NULL
+        je .fin
+        mov rdi, r12
+        mov rsi, r13
+        call listRemoveFirst
+        jmp .ciclo
+    mov rdi, r12
+    .fin:
+    mov r10, NULL
+    mov [r12 + off_firstList], r10
+    mov [r12 + off_lastList], r10
+    pop r13
+    pop r12
+    pop rbp
+    ret
     ;void listPrint(list_t* l, FILE *pFile, funcPrint_t* fp)
 listPrint:
 
@@ -938,9 +965,50 @@ recuAddn3:
     pop rbp
     ret 
 
-
-
+;void n3treeRemoveEq(n3tree_t* t, funcDelete_t* fd)
 n3treeRemoveEq:
+    push rbp
+    mov rbp, rsp
+    mov rdi, [rdi]
+    call n3treeRemoveRecu
+    pop rbp
+
+n3treeRemoveRecu:
+    push rbp
+    mov rbp, rsp
+    push r12
+    push r13
+
+    mov r12, rdi            ;tree = r12
+    mov r13, rsi            ;r13 = fd
+    cmp r12, NULL
+    je .salir
+    mov r10, [r12 + off_n3ElemCenter]
+    cmp qword [r10 + off_firstList], NULL
+    je .continuar
+    cmp r13, NULL
+    je .usoFree
+    mov rdi, r10
+    mov rsi, r13
+    call listEmpty
+    .continuar:
+        mov rdi, [r12 + off_n3ElemLeft]
+        mov rsi, r13
+        call n3treeRemoveRecu
+        mov rdi, [r12 + off_n3ElemRight]
+        mov rsi, r13
+        call n3treeRemoveRecu
+        jmp .salir
+    .usoFree:
+        mov r10, [r12 + off_n3ElemCenter]
+        mov rdi, r10
+        call free
+        jmp .continuar
+    .salir:
+
+    pop r13
+    pop r12
+    pop rbp
     ret
 
 n3treeDelete:
