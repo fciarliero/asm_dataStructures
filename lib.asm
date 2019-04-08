@@ -892,18 +892,17 @@ n3treeAdd:
     mov r12, rdi            ;rdi = n3tree
     mov r13, rsi            ;rsi = data 
     mov r14, rdx            ;rdx = fc
-    mov rdi, r13
-    call new_n3treeElem
-    mov r15, rax            ;r15 = nuevo nodo
     cmp qword [r12], NULL
     je .n3Nulo
     mov rdi, [r12]
-    mov rsi, r15
+    mov rsi, r13
     mov rdx, r14
     call recuAddn3
     jmp .fin
     .n3Nulo:
-        mov [r12], r15
+        mov rdi, r13
+        call new_n3treeElem
+        mov [r12], rax
     .fin:
     pop r15
     pop r14
@@ -911,7 +910,7 @@ n3treeAdd:
     pop r12
     pop rbp
     ret
-;n3tree_t* recuAddn3(n3treeElem* n3, n3treeElem* nodo, funcComp* fc)
+;n3tree_t* recuAddn3(n3treeElem* n3, void* data, funcComp* fc)
 recuAddn3:
     push rbp
     mov rbp, rsp
@@ -920,11 +919,11 @@ recuAddn3:
     push r14
     push r15
     mov r12, rdi    ;r12 = n3treeElem
-    mov r13, rsi    ;r13 = nodo
+    mov r13, rsi    ;r13 = dato
     mov r14, rdx    ;r14 = fc
 
     mov rdi, [r12 + off_n3ElemData]
-    mov rsi, [r13 + off_n3ElemData]
+    mov rsi, r13
     call r14
     cmp rax, menor
     je .agregoDer
@@ -932,13 +931,15 @@ recuAddn3:
     je .agregoIzq
     ;si estoy aca es porque son iguales
         mov rdi, [r12 + off_n3ElemCenter]
-        mov rsi, [r13 + off_n3ElemData]
+        mov rsi, r13
         call listAddLast
         jmp .fin
     .agregoIzq:
         cmp qword [r12 + off_n3ElemLeft], NULL
         jne .recuCallIz
-        mov [r12 + off_n3ElemLeft], r13
+        mov rdi, r13
+        call new_n3treeElem
+        mov [r12 + off_n3ElemLeft], rax
         jmp .fin
         .recuCallIz:
             mov rdi, [r12 + off_n3ElemLeft]
@@ -949,7 +950,9 @@ recuAddn3:
     .agregoDer:
         cmp qword [r12 + off_n3ElemRight], NULL
         jne .recuCallDe
-        mov [r12 + off_n3ElemRight], r13
+        mov rdi, r13
+        call new_n3treeElem
+        mov [r12 + off_n3ElemRight], rax
         jmp .fin
         .recuCallDe:
             mov rdi, [r12 + off_n3ElemRight]
@@ -986,8 +989,6 @@ n3treeRemoveRecu:
     mov r10, [r12 + off_n3ElemCenter]
     cmp qword [r10 + off_firstList], NULL
     je .continuar
-    cmp r13, NULL
-    je .usoFree
     mov rdi, r10
     mov rsi, r13
     call listEmpty
@@ -999,11 +1000,6 @@ n3treeRemoveRecu:
         mov rsi, r13
         call n3treeRemoveRecu
         jmp .salir
-    .usoFree:
-        mov r10, [r12 + off_n3ElemCenter]
-        mov rdi, r10
-        call free
-        jmp .continuar
     .salir:
 
     pop r13
@@ -1015,13 +1011,17 @@ n3treeDelete:
     push rbp
     mov rbp, rsp
     push r12
-    sub rbp, 8
+    push r13
     mov r12, rdi
+    mov r13, rsi
+   ; call n3treeRemoveEq
+    mov rdi, r12
     mov rdi, [rdi]
+    mov  rsi, r13
     call n3treeRecuDelete
     mov rdi, r12
     call free
-    add rbp, 8
+    pop r13
     pop r12
     pop rbp
     ret
@@ -1046,8 +1046,8 @@ n3treeRecuDelete:
     call r13
     jmp .continuar
     .llamoFree:
-    mov rdi, [r12 + off_n3ElemData]
-    call free
+    ;mov rdi, [r12 + off_n3ElemData]
+    ;call free
     .continuar:
         mov rdi, [r12 + off_n3ElemRight]
         mov rsi, r13

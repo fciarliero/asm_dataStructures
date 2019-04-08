@@ -234,6 +234,7 @@ void test_list(FILE *pfile) {
 }
 
 void test_n3Tree(FILE *pfile) {
+    char* strings[10] = {"aa","bb","dd","ff","00","zz","cc","ee","gg","hh"};
     char *a, *b, *c;
     n3tree_t *t;
     // n3treeAdd
@@ -245,9 +246,53 @@ void test_n3Tree(FILE *pfile) {
     n3treeAdd(t, strClone("zasf"),(funcCmp_t*)&strCmp);
     n3treeAdd(t, strClone("za33r"),(funcCmp_t*)&strCmp);
     n3treeAdd(t, strClone("21ar"),(funcCmp_t*)&strCmp);
+
+    n3treePrint(t,pfile,(funcPrint_t*)&strPrint);
+    fprintf(pfile,"\n");
+    // n3treeRemoveEq
+    fprintf(pfile,"==> n3treeRemoveEq\n");
+    n3treeRemoveEq(t,(funcDelete_t*)&strDelete);
     n3treePrint(t,pfile,(funcPrint_t*)&strPrint);
     fprintf(pfile,"\n");
     n3treeDelete(t,(funcDelete_t*)&strDelete);
+
+    t = n3treeNew();
+    for(int i=0;i<10;i++) {
+        for(int j=0;j<10;j++) {
+            n3treeAdd(t,strConcat(strClone(strings[i]),strClone(strings[j])),(funcCmp_t*)&strCmp);}}
+    for(int i=0;i<10;i++) {
+        for(int j=0;j<10;j++) {
+            n3treeAdd(t,strConcat(strClone(strings[i]),strClone(strings[j])),(funcCmp_t*)&strCmp);}}
+    for(int i=9;i>=0;i--) {
+        for(int j=9;j>=0;j--) {
+            n3treeAdd(t,strConcat(strClone(strings[i]),strClone(strings[j])),(funcCmp_t*)&strCmp);}}
+    n3treePrint(t,pfile,(funcPrint_t*)&strPrint);
+    fprintf(pfile,"\n");
+    // n3treeRemoveEq
+    fprintf(pfile,"==> n3treeRemoveEq\n");
+    n3treeRemoveEq(t,(funcDelete_t*)&strDelete);
+    n3treePrint(t,pfile,(funcPrint_t*)&strPrint);
+    fprintf(pfile,"\n");
+    n3treeDelete(t,(funcDelete_t*)&strDelete);
+    fprintf(pfile,"==> n3treeDelete n3treeRemoveEq\n");
+    char* stringsLocal[20];
+    t = n3treeNew();
+    for(int i=0; i<10;i++) {
+        stringsLocal[i] = strClone(strings[i]);
+        stringsLocal[i+10] = strClone(strings[i]);
+    }
+    n3treePrint(t,pfile,(funcPrint_t*)&strPrint);
+    for(int i=0; i<10;i++)
+        n3treeAdd(t, stringsLocal[i],(funcCmp_t*)&strCmp);
+    n3treePrint(t,pfile,(funcPrint_t*)&strPrint);
+    for(int i=10; i<20;i++)
+        n3treeAdd(t, stringsLocal[i],(funcCmp_t*)&strCmp);
+    n3treePrint(t,pfile,(funcPrint_t*)&strPrint);
+    n3treeRemoveEq(t,0);
+    n3treePrint(t,pfile,(funcPrint_t*)&strPrint);
+    n3treeDelete(t,0);
+    for(int i=0; i<20;i++)
+        free(stringsLocal[i]);
 }
 
 int main (void){
