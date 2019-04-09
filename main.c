@@ -6,13 +6,6 @@
 #include <math.h>
 
 #include "lib.h"
-void test_n3tree(FILE *pfile){
-    
-}
-
-void test_nTable(FILE *pfile){
-    
-}
 
 void test_string(FILE *pfile){
 char *a, *b, *c;
@@ -295,13 +288,26 @@ void test_n3Tree(FILE *pfile) {
         free(stringsLocal[i]);
 }
 
+void test_ntable(FILE *pfile) {
+        char* strings[10] = {"aa","bb","dd","ff","00","zz","cc","ee","gg","hh"};
+    char *a, *b, *c;
+    nTable_t *n;
+    // nTableAdd
+    fprintf(pfile,"==> nTableAdd\n");
+    n = nTableNew(32);
+    nTablePrint(n, pfile,(funcPrint_t*)&strPrint );
+    for(int s=0;s<64;s++) {
+        for(int i=0;i<10;i++) {
+            nTableAdd(n, s, strClone(strings[i]), (funcCmp_t*)&strCmp);}}
+            nTablePrint(n, pfile,(funcPrint_t*)&strPrint );
+}
+
 int main (void){
     FILE *pfile = fopen("salida.caso.propios.txt","w");
     //test_string(pfile);
     //test_list(pfile);
-    test_n3Tree(pfile);
-    //test_n3tree(pfile);
-    //test_nTable(pfile);
+    //test_n3Tree(pfile);
+    test_ntable(pfile);
     fclose(pfile);
     return 0;
 }

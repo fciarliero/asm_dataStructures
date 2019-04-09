@@ -105,21 +105,7 @@ void n3treePrintAux(n3treeElem_t* t, FILE *pFile, funcPrint_t* fp) {
 
 	n3treePrintAux(t->left, pFile, fp);
 }
-//
-//void printInorder(struct Node* node) 
-//{ 
-//    if (node == NULL) 
-//        return; 
-//  
-//    /* first recur on left child */
-//    printInorder(node->left); 
-//  
-//    /* then print the data of node */
-//    cout << node->data << " "; 
-//  
-//    /* now recur on right child */
-//    printInorder(node->right); 
-//} 
+
 void n3treePrint(n3tree_t* t, FILE *pFile, funcPrint_t* fp) {
 	fprintf(pFile, "%s","<< " );
 	if(t != NULL){
@@ -129,11 +115,31 @@ void n3treePrint(n3tree_t* t, FILE *pFile, funcPrint_t* fp) {
 }
 
 /** nTable **/
+/*
+typedef struct s_nTable{
+    struct s_list **listArray;
+    uint32_t size;
+} nTable_t;
+*/
 
 void nTableRemoveAll(nTable_t* t, void* data, funcCmp_t* fc, funcDelete_t* fd) {
 
 }
 
 void nTablePrint(nTable_t* t, FILE *pFile, funcPrint_t* fp) {
+	int tam = t->size;
+	list_t **lista = t->listArray;
+	for (int i = 0; i < tam; ++i)
+	{
+		fprintf(pFile, "%i", i );
+		fprintf(pFile, "%s"," = " );
+
+		listPrint(lista[i], pFile, fp);
+		if (i != tam -1)
+		{
+			/* code */
+		}
+		fprintf(pFile, "\n","" );
+	}
 
 }

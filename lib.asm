@@ -56,6 +56,9 @@ global nTableDelete
     %define mayor 1
     %define igual 0
 
+    %define off_nlistArray 0
+    %define off_nlistSize 8
+
 ;uint32_t strLen(char* a)
 strLen:                     ;rdi → *a
     push rbp
@@ -1063,12 +1066,95 @@ n3treeRecuDelete:
     pop r12
     pop rbp
     ret
-
-
+;typedef struct s_nTable{
+;   struct s_list **listArray;      ←offset 0
+;   uint32_t size;                  ←offset 8
+;} nTable_t;                        ←tam 16
+;nTable_t* nTableNew(uint32_t size)
 nTableNew:
+    push rbp
+    mov rbp, rsp
+    push r12
+    push r13
+    mov r12, rdi
+    mov rdi, 16
+    call malloc
+    mov r13, rax
+    mov [r13 + off_nlistSize], r12
+    mov rdi, r12
+    call generarArrayListas
+    mov [r13 + off_nlistArray], rax
+    mov rax, r13
+    pop r13
+    pop r12
+    pop rbp
     ret
 
+;list_t* generarArray(uint size)
+generarArrayListas:
+    push rbp
+    mov rbp, rsp
+    push r12
+    push r13
+    push r14
+    push r15
+    mov r14, 0
+    mov r12, rdi
+    mov rax, 8
+    mul r12
+    mov rdi, rax
+    call malloc
+    mov r13, rax
+    .ciclo:
+        cmp r14, r12
+        je .fin
+        call listNew
+        mov [r13 + 8*r14], rax
+        inc r14
+        jmp .ciclo
+    .fin:
+    mov rax, r13
+    pop r15
+    pop r14
+    pop r13
+    pop r12 
+    pop rbp
+    ret
+
+;void nTableAdd(nTable_t* t, uint32_t slot, void* data, funcCmp_t* fc)
+;Agrega un nuevo elemento que contenga data a la lista indicada por el numero de slot.
 nTableAdd:
+    push rbp
+    mov rbp, rsp
+    push r12
+    push r13
+    push r14
+    push r15
+
+    mov r12, rdi                ;t = r12
+    mov r13, rsi                ;slot = r13
+    mov r14, rdx                ;data = r14
+    mov r15, rcx                ;fc = rcx
+    ;calculo el resto del slot con el tamaño de la lista
+    xor rax, rax
+    xor rdx, rdx
+    xor rcx, rcx
+    mov rax, r13
+    mov r13, [r12 + off_nlistSize]
+    div r13
+    mov r13, rdx
+
+    mov r10, [r12 + off_nlistArray]
+    mov r10, [r10 + r13 * 8]        ;array[slot] = r10
+    mov rdi, r10
+    mov rsi, r14
+    mov rdx, r15
+    call listAdd
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop rbp
     ret
     
 nTableRemoveSlot:
