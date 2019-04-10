@@ -295,18 +295,34 @@ void test_ntable(FILE *pfile) {
     // nTableAdd
     fprintf(pfile,"==> nTableAdd\n");
     n = nTableNew(32);
-    nTablePrint(n, pfile,(funcPrint_t*)&strPrint );
     for(int s=0;s<64;s++) {
         for(int i=0;i<10;i++) {
             nTableAdd(n, s, strClone(strings[i]), (funcCmp_t*)&strCmp);}}
-            nTablePrint(n, pfile,(funcPrint_t*)&strPrint );
+    // nTableRemoveSlot
+    fprintf(pfile,"==> nTableRemoveSlot\n");
+    for(int i=0;i<10;i++) {
+        a = strClone(strings[i]);
+        nTableRemoveSlot(n,i,a,(funcCmp_t*)&strCmp,(funcDelete_t*)&strDelete);
+        strDelete(a);}
+    // nTableRemoveAll
+    fprintf(pfile,"==> nTableRemoveAll\n");
+    for(int i=5;i<10;i++) {
+        a = strClone(strings[i]);
+        nTableRemoveAll(n,a,(funcCmp_t*)&strCmp,(funcDelete_t*)&strDelete);
+        strDelete(a);}
+    // nTableDeleteSlot
+    fprintf(pfile,"==> nTableDeleteSlot\n");
+    for(int i=50;i<56;i++) {
+        nTableDeleteSlot(n,i,(funcDelete_t*)&strDelete);}
+    nTablePrint(n,pfile,(funcPrint_t*)&strPrint);
+    nTableDelete(n,(funcDelete_t*)&strDelete);
 }
 
 int main (void){
     FILE *pfile = fopen("salida.caso.propios.txt","w");
-    //test_string(pfile);
-    //test_list(pfile);
-    //test_n3Tree(pfile);
+    test_string(pfile);
+    test_list(pfile);
+    test_n3Tree(pfile);
     test_ntable(pfile);
     fclose(pfile);
     return 0;

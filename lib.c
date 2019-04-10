@@ -89,7 +89,7 @@ void n3treePrintAux(n3treeElem_t* t, FILE *pFile, funcPrint_t* fp) {
 	{
 		return;
 	}
-	n3treePrintAux(t->right, pFile, fp);
+	n3treePrintAux(t->left, pFile, fp);
 
 		if(fp == NULL){
 			fprintf(pFile, "%p",t->data );
@@ -103,7 +103,7 @@ void n3treePrintAux(n3treeElem_t* t, FILE *pFile, funcPrint_t* fp) {
 		}
 		fprintf(pFile, "%s"," ");
 
-	n3treePrintAux(t->left, pFile, fp);
+	n3treePrintAux(t->right, pFile, fp);
 }
 
 void n3treePrint(n3tree_t* t, FILE *pFile, funcPrint_t* fp) {
@@ -123,6 +123,14 @@ typedef struct s_nTable{
 */
 
 void nTableRemoveAll(nTable_t* t, void* data, funcCmp_t* fc, funcDelete_t* fd) {
+	bool borro = fd == NULL;
+	int tam = t->size;
+	list_t **lista = t->listArray;
+	for (int i = 0; i < tam; ++i)
+	{	//void listRemove(list_t* l, void* data, funcCmp_t* fc, funcDelete_t* fd)
+		listRemove(lista[i],data, fc, fd );
+	}
+
 
 }
 
@@ -133,13 +141,8 @@ void nTablePrint(nTable_t* t, FILE *pFile, funcPrint_t* fp) {
 	{
 		fprintf(pFile, "%i", i );
 		fprintf(pFile, "%s"," = " );
-
 		listPrint(lista[i], pFile, fp);
-		if (i != tam -1)
-		{
-			/* code */
-		}
-		fprintf(pFile, "\n","" );
+		fprintf(pFile, "\n" );
 	}
 
 }

@@ -52,8 +52,8 @@ global nTableDelete
     %define off_n3ElemCenter 16
     %define off_n3ElemRight 24
 
-    %define menor -1
-    %define mayor 1
+    %define mayor -1
+    %define menor 1
     %define igual 0
 
     %define off_nlistArray 0
@@ -62,23 +62,21 @@ global nTableDelete
 ;uint32_t strLen(char* a)
 strLen:                     ;rdi → *a
     push rbp
+    mov rbp, rsp
     push rdi
     push r12
     xor r12,r12
-    mov rbp, rsp
-    sub rsp, 8
     xor rax, rax            ;rax ← 0
     cmp rdi, NULL
     je .fin
     .ciclo:
-        mov r12b, [rdi]     ;r12b ← [a] el char al que apunta el puntero a
-        cmp r12b, NULL      ;si este char es el char null, termine de recorrer el string
+        mov r12b, [rdi]     
+        cmp r12b, NULL      
         je .fin
         inc rax             ;si no es null el char actual, incremento el contador y posiciono el puntero en el proximo char
         inc rdi
         jmp .ciclo
     .fin:
-    add rsp, 8
     pop r12
     pop rdi
     pop rbp
@@ -120,61 +118,35 @@ strClone:                   ;rdi ← a
 
 ;int32_t strCmp(char* a, char* b)
 strCmp:
-    push rbp
-    mov rbp, rsp
-    push r12
-    push r13
-    .ciclo:
-        mov r12b, [rdi]
-        mov r13b, [rsi]
-        inc rsi
-        inc rdi
-        cmp r12b, NULL
-        je .terminoA
-        cmp r13b, NULL
-        je .terminoB
-        cmp r12b, r13b
-        je .ciclo
-        jge .bGrande
-        jle .aGrande
+push rbp
+mov rbp, rsp
 
-        .terminoA:
-            cmp r13b, NULL
-            je .AigualB
-            jmp .bGrande
-
-        .terminoB:
-            cmp r12b, NULL
-            je .AigualB
-            jmp .aGrande
-    .aGrande:
-        mov rax, mayor
-        jmp .fin
-    .bGrande:
-        mov rax, menor
-        jmp .fin
-    .AigualB:
+.ciclo:
+    mov cl, [rdi]   
+    mov dl, [rsi]
+    cmp cl, dl
+    je .charIguales
+    jl .aMenorb
+    jg .aMayorb
+.charIguales:
+    cmp cl, NULL
+    je .strIguales
+    inc rdi
+    inc rsi
+    jmp .ciclo
+.aMenorb:
+    mov rax, menor
+    jmp .fin
+.aMayorb:
+    mov rax, mayor
+    jmp .fin
+.strIguales:
     mov rax, igual
-    .fin:
-    pop r13
-    pop r12
+    jmp .fin
+.fin:
     pop rbp
     ret
 
-;char *string_concat( char *a, char *b){
-;    int largo = strLen(a);
-;    largo = largo + strLen(b);
-;    char *c = malloc(largo + 1);
-;    for (int i = 0; i < largo; ++i)
-;    {   
-;        if (largo < strLen(a))
-;        {
-;            c[i] = a[i];
-;        }else{
-;            c[i] = b[i];
-;        }
-;    }
-;}
 strConcat:
 push rbp
 mov rbp, rsp
@@ -1156,12 +1128,108 @@ nTableAdd:
     pop r12
     pop rbp
     ret
-    
+;void nTableRemoveSlot(nTable_t* t, uint32_t slot, void* data, funcCmp_t* fc,funcDelete_t* fd)
+;Borra los elementos iguales a data de la lista indicada por el número de slot. Si fd no es cero,
+;utiliza la función para borrar los datos en cuestión.
 nTableRemoveSlot:
+    push rbp
+    mov rbp, rsp
+    push r12
+    push r13
+    push r14
+    push r15
+    mov r12, rdi                ;t = r12
+    mov r13, rsi                ;slot = r13        
+    mov r14, rdx                ;data = r14    
+    mov r15, rcx                ;fc = r15 
+                                ;r8 = fd
+    xor rax, rax
+    xor rdx, rdx
+    xor rcx, rcx
+    mov rax, r13
+    mov r13, [r12 + off_nlistSize]
+    div r13
+    mov r13, rdx                    ;r13 = slot posta mod size
+    mov r10, [r12 + off_nlistArray]
+    mov r10, [r10 + r13 * 8]        ;array[slot] = r10
+    ;void listRemove(list_t* l, void* data, funcCmp_t* fc, funcDelete_t* fd)
+    mov rdi, r10
+    mov rsi, r14
+    mov rdx, r15
+    mov rcx, r8
+    call listRemove
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop rbp
     ret
-    
+;void nTableDeleteSlot(nTable_t* t, uint32_t slot, funcDelete_t* fd)
 nTableDeleteSlot:
+    push rbp
+    mov rbp, rsp
+    push r12
+    push r13
+    push r14
+    push r15
+    mov r12, rdi                     ;t = r12
+    mov r13, rsi                     ;slot = r13        
+    mov r14, rdx                     ;fd = r14    
+
+    xor rax, rax
+    xor rdx, rdx
+    xor rcx, rcx
+    mov rax, r13
+    mov r13, [r12 + off_nlistSize]
+    div r13
+
+    mov r13, rdx                    ;r13 = slot posta mod size
+    mov r10, [r12 + off_nlistArray]
+    mov r10, [r10 + r13 * 8]        ;array[slot] = r10
+    ;void listRemove(list_t* l, void* data, funcCmp_t* fc, funcDelete_t* fd)
+    mov rdi, r10
+    mov rsi, r14
+
+    call listEmpty
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop rbp
+    ret  
+
+
+;void nTableDelete(nTable_t* t, funcDelete_t* fd)
+nTableDelete:
+    push rbp
+    mov rbp, rsp
+    push r12
+    push r13
+    push r14
+    push r15
+    mov r12, rdi                     ;t = r12
+    mov r13, rsi                     ;fd = r13        
+    mov r14, [r12 + off_nlistSize]
+    xor r15, r15
+    .ciclo:
+        cmp r14, r15
+        je .finCiclo
+        mov r10, [r12 + off_nlistArray]
+        mov r10, [r10 + r15 * 8]
+        mov rdi, r10
+        mov rsi, r13
+        call listDelete
+        inc r15
+        jmp .ciclo
+    .finCiclo:
+    mov rdi, [r12 + off_nlistArray]
+    call free
+    mov rdi, r12
+    call free
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop rbp
     ret
 
-nTableDelete:
-    ret
