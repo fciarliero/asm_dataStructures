@@ -59,7 +59,6 @@ global nTableDelete
     %define off_nlistArray 0
     %define off_nlistSize 8
 
-;uint32_t strLen(char* a)
 strLen:                     ;rdi → *a
     push rbp
     mov rbp, rsp
@@ -82,20 +81,18 @@ strLen:                     ;rdi → *a
     pop rbp
     ret
 
-;char* strClone(char* a)
+;;char* strClone(char* a)
 strClone:                   ;rdi ← a
     push rbp
     mov rbp, rsp
-    push r12
     push r13
     push rdi
-    sub rsp, 8
     call strLen
     inc rax                 ;rax tiene la longitud del string en bytes, inc para que incluya un byte para '\0'
     mov rdi, rax
     call malloc
-    add rsp, 8
     pop rdi
+    sub rsp, 8
     mov r13, rax
     .ciclo:
         cmp rdi, NULL
@@ -110,8 +107,8 @@ strClone:                   ;rdi ← a
     .fin:
         ;inc r13
     mov byte [r13], NULL
+    add rsp, 8
     pop r13
-    pop r12
     pop rbp
 
     ret
@@ -146,7 +143,7 @@ mov rbp, rsp
 .fin:
     pop rbp
     ret
-
+;
 strConcat:
 push rbp
 mov rbp, rsp
@@ -220,7 +217,7 @@ pop r13
 pop r12
 pop rbp
 ret
-
+;
 strDelete:
     push rbp
     mov rbp, rsp
@@ -288,7 +285,7 @@ del_listElem: ;rdi = nodoAborrar, rsi = &pointerSiguiente, rdx = &pointerAnterio
     push r12
     push r13
     push r14
-    push r15
+    sub rsp, 8
 
     mov r12, rdi        ;r12 = nodo a borrar
     mov r13, rsi        ;r13 = funcDelete
@@ -304,7 +301,7 @@ del_listElem: ;rdi = nodoAborrar, rsi = &pointerSiguiente, rdx = &pointerAnterio
     .salir:
     mov rdi, r12
     call free
-    pop r15
+    add rsp, 8
     pop r14
     pop r13
     pop r12
@@ -457,7 +454,7 @@ listAdd:
         call r14
             add rsp, 8
             pop r11
-        cmp rax, 1
+        cmp eax, 1
         jne .salirCiclo
         mov r11, r15
         mov r15, [r15 + off_nextNodo]
@@ -863,7 +860,7 @@ n3treeAdd:
     push r12
     push r13
     push r14
-    push r15
+    sub rsp, 8
     mov r12, rdi            ;rdi = n3tree
     mov r13, rsi            ;rsi = data 
     mov r14, rdx            ;rdx = fc
@@ -879,7 +876,7 @@ n3treeAdd:
         call new_n3treeElem
         mov [r12], rax
     .fin:
-    pop r15
+    add rsp, 8
     pop r14
     pop r13
     pop r12
@@ -892,7 +889,7 @@ recuAddn3:
     push r12
     push r13
     push r14
-    push r15
+    sub rsp, 8
     mov r12, rdi    ;r12 = n3treeElem
     mov r13, rsi    ;r13 = dato
     mov r14, rdx    ;r14 = fc
@@ -936,7 +933,7 @@ recuAddn3:
             call recuAddn3
             jmp .fin   
     .fin:
-    pop r15
+    add rsp, 8
     pop r14
     pop r13
     pop r12
@@ -950,6 +947,7 @@ n3treeRemoveEq:
     mov rdi, [rdi]
     call n3treeRemoveRecu
     pop rbp
+    ret
 
 n3treeRemoveRecu:
     push rbp
@@ -1048,12 +1046,12 @@ nTableNew:
     mov rbp, rsp
     push r12
     push r13
-    mov r12, rdi
-    mov rdi, 16
+    mov r12d, edi
+    mov edi, 16
     call malloc
     mov r13, rax
     mov [r13 + off_nlistSize], r12
-    mov rdi, r12
+    mov edi, r12d
     call generarArrayListas
     mov [r13 + off_nlistArray], rax
     mov rax, r13
@@ -1069,7 +1067,7 @@ generarArrayListas:
     push r12
     push r13
     push r14
-    push r15
+    sub rsp, 8
     mov r14, 0
     mov r12, rdi
     mov rax, 8
@@ -1086,7 +1084,7 @@ generarArrayListas:
         jmp .ciclo
     .fin:
     mov rax, r13
-    pop r15
+    add rsp, 8
     pop r14
     pop r13
     pop r12 
@@ -1104,17 +1102,17 @@ nTableAdd:
     push r15
 
     mov r12, rdi                ;t = r12
-    mov r13, rsi                ;slot = r13
+    mov r13d, esi               ;slot = r13
     mov r14, rdx                ;data = r14
     mov r15, rcx                ;fc = rcx
     ;calculo el resto del slot con el tamaño de la lista
-    xor rax, rax
+    xor eax, eax
     xor rdx, rdx
     xor rcx, rcx
-    mov rax, r13
-    mov r13, [r12 + off_nlistSize]
-    div r13
-    mov r13, rdx
+    mov eax, r13d
+    mov r13d, [r12 + off_nlistSize]
+    div r13d
+    mov r13d, edx
 
     mov r10, [r12 + off_nlistArray]
     mov r10, [r10 + r13 * 8]        ;array[slot] = r10
@@ -1139,17 +1137,17 @@ nTableRemoveSlot:
     push r14
     push r15
     mov r12, rdi                ;t = r12
-    mov r13, rsi                ;slot = r13        
+    mov r13d, esi                ;slot = r13        
     mov r14, rdx                ;data = r14    
     mov r15, rcx                ;fc = r15 
                                 ;r8 = fd
     xor rax, rax
     xor rdx, rdx
     xor rcx, rcx
-    mov rax, r13
-    mov r13, [r12 + off_nlistSize]
-    div r13
-    mov r13, rdx                    ;r13 = slot posta mod size
+    mov eax, r13d
+    mov r13d, [r12 + off_nlistSize]
+    div r13d
+    mov r13d, edx                    ;r13 = slot posta mod size
     mov r10, [r12 + off_nlistArray]
     mov r10, [r10 + r13 * 8]        ;array[slot] = r10
     ;void listRemove(list_t* l, void* data, funcCmp_t* fc, funcDelete_t* fd)
@@ -1171,7 +1169,7 @@ nTableDeleteSlot:
     push r12
     push r13
     push r14
-    push r15
+    sub rsp, 8
     mov r12, rdi                     ;t = r12
     mov r13, rsi                     ;slot = r13        
     mov r14, rdx                     ;fd = r14    
@@ -1191,7 +1189,7 @@ nTableDeleteSlot:
     mov rsi, r14
 
     call listEmpty
-    pop r15
+    add rsp, 8
     pop r14
     pop r13
     pop r12
