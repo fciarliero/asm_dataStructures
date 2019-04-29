@@ -17,6 +17,7 @@ void test_n3Tree(FILE *pfile) {
         }
     n3treePrint(t,pfile,(funcPrint_t*)&strPrint);
     n3treeDelete(t,(funcDelete_t*)&strDelete);
+    fprintf(pfile, "%s\n","" );
 
 }
 
